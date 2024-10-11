@@ -1,8 +1,12 @@
 """sopel-deepl
 
 DeepL translation plugin for Sopel IRC bots.
+
+Licensed under the Eiffel Forum License 2.
+
+Copyright 2021-2024 dgw, technobabbl.es
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import deepl_api
 import requests.exceptions
@@ -18,13 +22,19 @@ LOGGER = get_logger('deepl')
 class DeepLSection(types.StaticSection):
     auth_key = types.ValidatedAttribute('auth_key', default=types.NO_DEFAULT)
     """Your DeepL account's Authentication Key."""
+    default_target = types.ValidatedAttribute('default_target', default='EN-US')
+    """The bot-wide default target language code."""
 
 
 def configure(config):
     config.define_section('deepl', DeepLSection, validate=False)
     config.deepl.configure_setting(
         'auth_key',
-        "Enter your DeepL account's Authentication Key:",
+        "Enter your DeepL API Key:",
+    )
+    config.deepl.configure_setting(
+        'default_target',
+        'Enter the default target language code:',
     )
 
 
@@ -47,7 +57,7 @@ def deepl_command(bot, trigger):
     try:
         translations = bot.memory['deepl_instance'].translate(
             texts=[text],
-            target_language='EN-US',
+            target_language=bot.config.deepl.default_target,
         )
     except deepl_api.exceptions.DeeplAuthorizationError:
         bot.reply(
