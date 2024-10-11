@@ -15,6 +15,8 @@ from sopel import plugin
 from sopel.config import types
 from sopel.tools import get_logger
 
+from . import util
+
 
 LOGGER = get_logger('deepl')
 
@@ -54,10 +56,14 @@ def deepl_command(bot, trigger):
         bot.reply("What did you want me to translate?")
         return plugin.NOLIMIT
 
+    target_lang = util.get_preferred_target(
+        bot, trigger.nick, trigger.sender
+    )
+
     try:
         translations = bot.memory['deepl_instance'].translate(
             texts=[text],
-            target_language=bot.config.deepl.default_target,
+            target_language=target_lang,
         )
     except deepl_api.exceptions.DeeplAuthorizationError:
         bot.reply(
@@ -102,7 +108,58 @@ def deepl_command(bot, trigger):
             text,
         )
 
-    bot.say('"{}" (from {})'.format(
-        translations[0]['text'],
-        translations[0]['detected_source_language'],
-    ))
+    bot.say(
+        '"' + translations[0]['text'],
+        truncation='…',
+        trailing='" ({} 🡒 {})'.format(
+            translations[0]['detected_source_language'],
+            target_lang,
+        ),
+    )
+
+
+@plugin.commands('deeplang')
+@plugin.example('.deeplang DE')
+def set_user_target(bot, trigger):
+    """Set or view your preferred target language for translations."""
+    if not (target := trigger.group(3)):
+        if setting := bot.db.get_nick_value(trigger.nick, util.TARGET_SETTING_NAME, None):
+            msg = (
+                "Your preferred target language is currently set to {}. "
+                "(To clear this setting, use `{}deeplang -`.)"
+                .format(setting, bot.settings.core.help_prefix)
+            )
+        else:
+            msg = "What language code do you want to use?"
+
+        bot.reply(msg)
+        return plugin.NOLIMIT
+
+    util.set_preferred_target(bot, trigger.nick, target)
+    action = ("cleared" if target == "-" else "set to " + target)
+    bot.reply("Your preferred target language is now {}.".format(action))
+
+
+@plugin.commands('deepclang')
+@plugin.example('.deepclang DE')
+@plugin.require_privilege(  # require_chanmsg() is implied as of Sopel 8.0
+    plugin.OP,
+    "You must be a channel operator to change this setting.")
+def set_channel_target(bot, trigger):
+    """Set or view the channel's preferred target language for translations."""
+    if not (target := trigger.group(3)):
+        if setting := bot.db.get_channel_value(trigger.sender, util.TARGET_SETTING_NAME, None):
+            msg = (
+                "The preferred target language for this channel is currently set to {}. "
+                "(To clear this setting, use `{}deepclang -`.)"
+                .format(setting, bot.settings.core.help_prefix)
+            )
+        else:
+            msg = "What language code do you want to use?"
+
+        bot.reply(msg)
+        return plugin.NOLIMIT
+
+    util.set_preferred_target(bot, trigger.sender, target)
+    action = ("cleared" if target == "-" else "set to " + target)
+    bot.reply("The preferred target language for this channel is now {}.".format(action))
