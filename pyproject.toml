@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=63.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+platforms = ["Linux x86, x86-64"]
+
+[tool.setuptools.packages.find]
+include = ["sopel_deepl", "sopel_deepl.*"]
+namespaces = false
+
+[tool.setuptools.dynamic]
+readme = { file=["README.md", "NEWS"], content-type="text/markdown" }
+
+[project]
+name = "sopel-deepl"
+version = "0.1.0"
+description = "DeepL translation plugin for Sopel IRC bots."
+
+authors = [
+  { name="dgw", email="dgw@technobabbl.es" },
+]
+
+license = { text="EFL-2.0" }
+dynamic = ["readme"]
+
+classifiers = [
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "License :: Eiffel Forum License (EFL)",
+  "License :: OSI Approved :: Eiffel Forum License",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3 :: Only",
+  "Topic :: Communications :: Chat :: Internet Relay Chat",
+]
+keywords = [
+  "sopel",
+  "plugin",
+  "bot",
+  "irc",
+  "translation",
+]
+
+requires-python = ">=3.8, <4"
+dependencies = [
+  "sopel>=8.0",
+  "deepl_api~=0.2.2",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/dgw/sopel-deepl"
+"Bug Tracker" = "https://github.com/dgw/sopel-deepl/issues"
+
+[project.entry-points."sopel.plugins"]
+"deepl" = "sopel_deepl.plugin"
