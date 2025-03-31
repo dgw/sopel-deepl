@@ -2,7 +2,7 @@
 
 DeepL translation plugin for Sopel IRC bots.
 """
-from __future__ import generator_stop
+from __future__ import annotations
 
 import deepl_api
 import requests.exceptions
@@ -16,7 +16,7 @@ LOGGER = get_logger('deepl')
 
 
 class DeepLSection(types.StaticSection):
-    auth_key = types.ValidatedAttribute('auth_key', default=types.NO_DEFAULT)
+    auth_key = types.SecretAttribute('auth_key', default=types.NO_DEFAULT)
     """Your DeepL account's Authentication Key."""
 
 
