@@ -4,7 +4,7 @@ DeepL translation plugin for Sopel IRC bots.
 
 Licensed under the Eiffel Forum License 2.
 
-Copyright 2021-2024 dgw, technobabbl.es
+Copyright 2021-2025 dgw, technobabbl.es
 """
 from __future__ import annotations
 
@@ -121,7 +121,10 @@ def deepl_command(bot, trigger):
 @plugin.commands('deeplang')
 @plugin.example('.deeplang DE')
 def set_user_target(bot, trigger):
-    """Set or view your preferred target language for translations."""
+    """Set or view your preferred target language for translations.
+
+    For available language codes, see https://developers.deepl.com/docs/getting-started/supported-languages#translation-target-languages
+    """
     if not (target := trigger.group(3)):
         if setting := bot.db.get_nick_value(trigger.nick, util.TARGET_SETTING_NAME, None):
             msg = (
@@ -146,7 +149,10 @@ def set_user_target(bot, trigger):
     plugin.OP,
     "You must be a channel operator to change this setting.")
 def set_channel_target(bot, trigger):
-    """Set or view the channel's preferred target language for translations."""
+    """Set or view the channel's preferred target language for translations.
+
+    For available language codes, see https://developers.deepl.com/docs/getting-started/supported-languages#translation-target-languages
+    """
     if not (target := trigger.group(3)):
         if setting := bot.db.get_channel_value(trigger.sender, util.TARGET_SETTING_NAME, None):
             msg = (
