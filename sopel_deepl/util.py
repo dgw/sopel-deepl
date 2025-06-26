@@ -29,7 +29,7 @@ def get_preferred_target(
     ):
         return target
     elif context and (
-         target := bot.db.get_channel_value(context, TARGET_SETTING_NAME, None)
+        target := bot.db.get_channel_value(context, TARGET_SETTING_NAME, None)
     ):
         return target
     else:

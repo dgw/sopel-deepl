@@ -88,7 +88,7 @@ def deepl_command(bot, trigger):
             "Please wait a while and try again."
         )
         return
-    except requests.exceptions.RequestException as exc:
+    except requests.exceptions.RequestException:
         bot.reply(
             "Something prevented me from talking to the DeepL service. "
             "Please try again later."
