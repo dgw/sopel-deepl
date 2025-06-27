@@ -24,11 +24,11 @@ def get_preferred_target(
     context: Identifier | None,
 ) -> str:
     """Get the preferred target language for a user in a given context."""
-    if nick and (
-       target := bot.db.get_nick_value(nick, TARGET_SETTING_NAME, None)
+    if nick and nick.is_nick() and (
+        target := bot.db.get_nick_value(nick, TARGET_SETTING_NAME, None)
     ):
         return target
-    elif context and (
+    elif context and not context.is_nick() and (
         target := bot.db.get_channel_value(context, TARGET_SETTING_NAME, None)
     ):
         return target
