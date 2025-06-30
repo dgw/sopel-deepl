@@ -8,8 +8,9 @@ Copyright 2021-2025 dgw, technobabbl.es
 """
 from __future__ import annotations
 
-import deepl_api
-import requests.exceptions
+from importlib.metadata import PackageNotFoundError, version
+
+import deepl
 
 from sopel import plugin
 from sopel.config import types
@@ -43,7 +44,18 @@ def configure(config):
 def setup(bot):
     bot.config.define_section('deepl', DeepLSection)
 
-    bot.memory['deepl_instance'] = deepl_api.DeepL(bot.config.deepl.auth_key)
+    try:
+        my_version = version('sopel-deepl')
+    except PackageNotFoundError:
+        LOGGER.warning(
+            'sopel-deepl is not installed as a package; '
+            'using "devel" as version for DeepL client.'
+        )
+        my_version = 'devel'
+
+    client = deepl.DeepLClient(bot.config.deepl.auth_key)
+    client.set_app_info('sopel-deepl', my_version)
+    bot.memory['deepl_instance'] = client
 
 
 @plugin.commands('deepl')
@@ -60,45 +72,54 @@ def deepl_command(bot, trigger):
         bot, trigger.nick, trigger.sender
     )
 
+    client: deepl.DeepLClient = bot.memory['deepl_instance']
     try:
-        translations = bot.memory['deepl_instance'].translate(
-            texts=[text],
-            target_language=target_lang,
+        result = client.translate_text(
+            text=text,
+            target_lang=target_lang,
         )
-    except deepl_api.exceptions.DeeplAuthorizationError:
+    except deepl.AuthorizationException:
         bot.reply(
             "DeepL says my authorization key is invalid. "
             "Please inform {}.".format(bot.config.core.owner))
         return
-    except deepl_api.exceptions.DeeplServerError:
+    except deepl.QuotaExceededException:
         bot.reply(
-            "There was an error on the DeepL server side. "
+            "DeepL says my authorization key has exceeded its quota. "
+            "Please wait a while and try again.")
+        return
+    except deepl.ConnectionException:
+        bot.reply(
+            "There was an error connecting to the DeepL server. "
             "Please try again later."
         )
         return
-    except deepl_api.exceptions.DeeplDeserializationError:
+    except deepl.TooManyRequestsException:
         bot.reply(
-            "Could not decipher the DeepL server's response. "
-            "Please inform {}.".format(bot.config.core.owner)
+            "Maximum number of retries reached. Please try again later."
         )
         return
-    except deepl_api.exceptions.DeeplBaseError:
-        bot.reply(
-            "Unknown error talking to DeepL service. "
-            "Please wait a while and try again."
-        )
-        return
-    except requests.exceptions.RequestException:
-        bot.reply(
-            "Something prevented me from talking to the DeepL service. "
-            "Please try again later."
-        )
-        LOGGER.exception(
-            'Error while trying to contact DeepL service'
-        )
+    except deepl.DeepLException as exc:
+        if (
+            exc.http_status_code is not None
+            and exc.http_status_code >= 400
+            and exc.http_status_code < 500
+        ):
+            # 4xx errors are client errors, like an unsupported language code,
+            # so tell the user what DeepL said back.
+            bot.reply(
+                "DeepL returned an error (HTTP {}): {}".format(
+                    exc.http_status_code, str(exc)
+                )
+            )
+        else:
+            bot.reply(
+                "Unknown error talking to DeepL service. "
+                "Please wait a while and try again."
+            )
         return
 
-    if not translations:
+    if not result:
         bot.reply(
             "DeepL returned empty translations. This is probably a bug. "
             "Please inform {}.".format(bot.config.core.owner)
@@ -109,10 +130,10 @@ def deepl_command(bot, trigger):
         )
 
     bot.say(
-        '"' + translations[0]['text'],
+        '"' + result.text,
         truncation='…',
         trailing='" ({} 🡒 {})'.format(
-            translations[0]['detected_source_language'],
+            result.detected_source_lang,
             target_lang,
         ),
     )
