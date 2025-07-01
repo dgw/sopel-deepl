@@ -9,8 +9,10 @@ This plugin is released on PyPI, so it's easy to install using `pip`:
     pip install sopel-deepl
 
 Sopel loads all available plugins by default. If you have changed your bot to
-the "enabled only" mode, edit your config file to enable the `deepl` plugin or
-run `sopel-plugins enable deepl` in your terminal.
+the ["enabled only" mode][enable-only-plugins], edit your config file to enable
+the `deepl` plugin or run `sopel-plugins enable deepl` in your terminal.
+
+[enable-only-plugins]: https://sopel.chat/docs/run/plugin#enable-only-plugins
 
 ## Usage
 

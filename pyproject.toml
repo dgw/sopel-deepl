@@ -14,7 +14,7 @@ readme = { file=["README.md", "NEWS"], content-type="text/markdown" }
 
 [project]
 name = "sopel-deepl"
-version = "0.1.0"
+version = "0.2.0"
 description = "DeepL translation plugin for Sopel IRC bots."
 
 authors = [

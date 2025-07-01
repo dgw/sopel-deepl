@@ -1,5 +1,23 @@
 ## Changelog
 
+### 0.2.0
+
+Added:
+- Bot-level default target language setting (#3)\
+  English is no longer the only supported translation target! 🎉
+- User & channel preferences for target language (#3)\
+  These are configured through IRC commands; see README.
+
+Changed:
+- Require Sopel 8.0+; Sopel 7.x and Python <= 3.7 are no longer supported (#1)
+- Use first-party `deepl` library instead of unofficial `deepl-api` (#5)
+
+Meta:
+- Filled out README documentation (#5)
+- Converted to `pyproject.toml` package with future-proofing (#1)
+- Miscellaneous code style tweaks & modernization
+
+
 ### 0.1.0
 
 First release of `sopel-deepl` with basic translate-to-English functionality.
